@@ -3,9 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:focus_app/features/login/cubit/cubit/login_cubit.dart';
 
 class LoginContent extends StatelessWidget {
-  final String? user;
-
-  const LoginContent({super.key, this.user});
+  const LoginContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +55,10 @@ class LoginContent extends StatelessWidget {
                 TextField(
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.email_outlined, color: Colors.white70),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      color: Colors.white70,
+                    ),
                     hintText: "Enter your email",
                     hintStyle: const TextStyle(color: Colors.white54),
                     filled: true,
@@ -85,7 +86,10 @@ class LoginContent extends StatelessWidget {
                   obscureText: true,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline, color: Colors.white70),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: Colors.white70,
+                    ),
                     hintText: "Enter your password",
                     hintStyle: const TextStyle(color: Colors.white54),
                     filled: true,
@@ -127,10 +131,7 @@ class LoginContent extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      "Log In",
-                      style: TextStyle(fontSize: 18),
-                    ),
+                    child: const Text("Log In", style: TextStyle(fontSize: 18)),
                   ),
                 ),
 
