@@ -13,11 +13,21 @@ class LoginStateBuilder extends StatelessWidget {
       builder: (context, state) {
         if (state is LoginFailure) {
           return LoginErrorContent(message: state.message);
-        }    
+        }
         if (state is LoginLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        return const LoginContent(user: null);
+        if (state is LoginSuccess) {
+          return const Scaffold(
+            body: Center(
+              child: Text(
+                'Login Successful!',
+                style: TextStyle(fontSize: 24, color: Colors.green),
+              ),
+            ),
+          );
+        }
+        return const LoginContent();
       },
     );
   }
