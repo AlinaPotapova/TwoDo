@@ -26,4 +26,3 @@ class LoginCubit extends Cubit<LoginState> {
     // Implement forget password logic here
   }
 }
-
