@@ -90,7 +90,7 @@ class _SummaryCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Here\'s your progress summary.',
-            style: TextStyle(color: Colors.white.withOpacity(0.6)),
+            style: TextStyle(color: Colors.white),
           ),
           const SizedBox(height: 16),
           Row(
