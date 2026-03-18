@@ -272,6 +272,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0"
+  get:
+    dependency: "direct main"
+    description:
+      name: get
+      sha256: "5ed34a7925b85336e15d472cc4cfe7d9ebf4ab8e8b9f688585bf6b50f4c3d79a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.7.3"
+  get_it:
+    dependency: "direct main"
+    description:
+      name: get_it
+      sha256: "1d648d2dd2047d7f7450d5727ca24ee435f240385753d90b49650e3cdff32e56"
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.2.0"
   glob:
     dependency: transitive
     description:
