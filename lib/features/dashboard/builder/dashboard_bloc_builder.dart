@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:focus_app/features/authentication/presentation/login/login_screen.dart';
-import 'package:focus_app/features/dashboard/content/dashboard_content.dart';
-import 'package:focus_app/features/dashboard/cubit/dashboard_cubit.dart';
-import 'package:focus_app/shared/custom_builder.dart';
+import 'package:two_do/features/authentication/presentation/login/login_screen.dart';
+import 'package:two_do/features/dashboard/content/dashboard_content.dart';
+import 'package:two_do/features/dashboard/cubit/dashboard_cubit.dart';
+import 'package:two_do/shared/custom_builder.dart';
 
 class DashboardBlocBuilder extends StatelessWidget {
   const DashboardBlocBuilder({super.key});

@@ -1,9 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:focus_app/features/authentication/data/firebase_repository.dart';
-import 'package:focus_app/features/authentication/domain/auth_repository.dart';
-import 'package:get/get.dart';
-import 'package:get/route_manager.dart';
+import 'package:two_do/features/authentication/domain/auth_repository.dart';
 
 part 'sign_up_state.dart';
 

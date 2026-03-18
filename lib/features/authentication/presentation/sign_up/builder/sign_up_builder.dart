@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:focus_app/shared/custom_builder.dart';
-import 'package:focus_app/features/authentication/presentation/sign_up/cubit/sign_up_cubit.dart';
-import 'package:focus_app/features/authentication/presentation/sign_up/context/sign_up_content.dart';
-import 'package:focus_app/shared/screen/error_screen.dart';
-import 'package:focus_app/shared/screen/success_screen.dart';
+import 'package:two_do/shared/custom_builder.dart';
+import 'package:two_do/features/authentication/presentation/sign_up/cubit/sign_up_cubit.dart';
+import 'package:two_do/features/authentication/presentation/sign_up/context/sign_up_content.dart';
+import 'package:two_do/shared/screen/error_screen.dart';
+import 'package:two_do/shared/screen/success_screen.dart';
 
 class SignUpBuilder extends StatelessWidget {
   const SignUpBuilder({super.key});

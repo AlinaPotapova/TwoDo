@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:focus_app/features/authentication/domain/auth_repository.dart';
-import 'package:focus_app/features/dashboard/content/dashboard_content.dart';
-import 'package:focus_app/features/dashboard/cubit/dashboard_cubit.dart';
+import 'package:two_do/features/authentication/domain/auth_repository.dart';
+import 'package:two_do/features/dashboard/content/dashboard_content.dart';
+import 'package:two_do/features/dashboard/cubit/dashboard_cubit.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 

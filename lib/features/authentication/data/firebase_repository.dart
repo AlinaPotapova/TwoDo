@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:focus_app/core/result_widget.dart';
-import 'package:focus_app/features/authentication/domain/auth_repository.dart';
-import 'package:focus_app/features/authentication/domain/model/custom_user.dart';
-import 'package:focus_app/features/authentication/services/google_service.dart';
+import 'package:two_do/core/result_widget.dart';
+import 'package:two_do/features/authentication/domain/auth_repository.dart';
+import 'package:two_do/features/authentication/domain/model/custom_user.dart';
+import 'package:two_do/features/authentication/services/google_service.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuthRepository({

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:focus_app/features/authentication/presentation/login/cubit/cubit/login_cubit.dart';
-import 'package:focus_app/features/authentication/presentation/sign_up/sign_up_screen.dart';
-import 'package:focus_app/shared/auth_widgets.dart';
-import 'package:focus_app/shared/circular_indicator.dart';
+import 'package:two_do/features/authentication/presentation/login/cubit/cubit/login_cubit.dart';
+import 'package:two_do/features/authentication/presentation/sign_up/sign_up_screen.dart';
+import 'package:two_do/shared/auth_widgets.dart';
+import 'package:two_do/shared/circular_indicator.dart';
 
 class LoginContent extends StatefulWidget {
   const LoginContent({super.key});
@@ -88,7 +88,8 @@ class _LoginContentState extends State<LoginContent> {
                               }
                               : () {
                                 context.read<LoginCubit>().forgetPassword(
-                                  "potapovaalina935@gmail.com",
+                                  //TODO: Implement forget password flow, e.g., navigate to a reset password screen or show a dialog to enter
+                                  "email",
                                 );
                               },
                     ),

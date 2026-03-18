@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:focus_app/features/authentication/domain/auth_repository.dart';
+import 'package:two_do/features/authentication/domain/auth_repository.dart';
 import 'package:meta/meta.dart';
 
 part 'dashboard_state.dart';

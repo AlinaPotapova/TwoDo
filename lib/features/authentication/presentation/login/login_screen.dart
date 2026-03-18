@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:focus_app/features/authentication/domain/auth_repository.dart';
-import 'package:focus_app/features/authentication/presentation/login/builder/login_bloc_builder.dart';
-import 'package:focus_app/features/authentication/presentation/login/cubit/cubit/login_cubit.dart';
+import 'package:two_do/features/authentication/domain/auth_repository.dart';
+import 'package:two_do/features/authentication/presentation/login/builder/login_bloc_builder.dart';
+import 'package:two_do/features/authentication/presentation/login/cubit/cubit/login_cubit.dart';
 import 'package:get/get.dart';
 
 class LoginScreen extends StatelessWidget {

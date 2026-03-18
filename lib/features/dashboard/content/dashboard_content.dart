@@ -1,46 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:focus_app/features/dashboard/cubit/dashboard_cubit.dart';
+import 'package:two_do/features/dashboard/cubit/dashboard_cubit.dart';
+import 'package:two_do/features/authentication/presentation/login/login_screen.dart';
 
 class DashboardContent extends StatelessWidget {
   const DashboardContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B1220),
-      bottomNavigationBar: _BottomNav(),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _TopBar(),
-              const SizedBox(height: 24),
-              _SummaryCard(),
-              const SizedBox(height: 20),
-              Row(
-                children: const [
-                  Expanded(child: _StreakCard()),
-                  SizedBox(width: 16),
-                  Expanded(child: _TasksCard()),
-                ],
-              ),
-              const SizedBox(height: 28),
-              const Text(
-                'Category Breakdown',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+    return BlocListener<DashboardCubit, DashboardState>(
+      listenWhen:
+          (previous, current) =>
+              current is DashboardSignedOut || current is DashboardFailure,
+      listener: (context, state) {
+        if (state is DashboardSignedOut) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+        } else if (state is DashboardFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Logout failed: ${state.message}')),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0B1220),
+        bottomNavigationBar: _BottomNav(),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _TopBar(),
+                const SizedBox(height: 24),
+                _SummaryCard(),
+                const SizedBox(height: 20),
+                Row(
+                  children: const [
+                    Expanded(child: _StreakCard()),
+                    SizedBox(width: 16),
+                    Expanded(child: _TasksCard()),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              _CategoryItem('Household', 0.75, Colors.green, Icons.home),
-              _CategoryItem('Shopping', 1.0, Colors.blue, Icons.shopping_cart),
-              _CategoryItem('Wellness', 0.5, Colors.purple, Icons.spa),
-            ],
+                const SizedBox(height: 28),
+                const Text(
+                  'Category Breakdown',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _CategoryItem('Household', 0.75, Colors.green, Icons.home),
+                _CategoryItem(
+                  'Shopping',
+                  1.0,
+                  Colors.blue,
+                  Icons.shopping_cart,
+                ),
+                _CategoryItem('Wellness', 0.5, Colors.purple, Icons.spa),
+              ],
+            ),
           ),
         ),
       ),

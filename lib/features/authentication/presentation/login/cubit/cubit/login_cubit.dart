@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:focus_app/core/result_widget.dart';
-import 'package:focus_app/features/authentication/domain/auth_repository.dart';
+import 'package:two_do/core/result_widget.dart';
+import 'package:two_do/features/authentication/domain/auth_repository.dart';
 import 'package:meta/meta.dart';
 
 part 'login_state.dart';

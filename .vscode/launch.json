@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "focus_app",
+            "name": "two_do",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "focus_app (profile mode)",
+            "name": "two_do (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "focus_app (release mode)",
+            "name": "two_do (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

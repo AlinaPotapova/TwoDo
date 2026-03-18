@@ -73,9 +73,10 @@ class DefaultFirebaseOptions {
     projectId: 'focus-app-abc37',
     databaseURL: 'https://focus-app-abc37-default-rtdb.firebaseio.com',
     storageBucket: 'focus-app-abc37.firebasestorage.app',
-    androidClientId: '220351166102-bp7fs9eq5avbihhls7b6d93ri37boksc.apps.googleusercontent.com',
-    iosClientId: '220351166102-aenr90ve8rmv6tt7o80nq7rme34sqmf1.apps.googleusercontent.com',
+    androidClientId:
+        '220351166102-bp7fs9eq5avbihhls7b6d93ri37boksc.apps.googleusercontent.com',
+    iosClientId:
+        '220351166102-aenr90ve8rmv6tt7o80nq7rme34sqmf1.apps.googleusercontent.com',
     iosBundleId: 'com.example.focusApp',
   );
-
 }

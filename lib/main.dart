@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:focus_app/core/dependency_injection.dart';
-import 'package:focus_app/features/authentication/presentation/login/login_screen.dart';
+import 'package:two_do/core/dependency_injection.dart';
+import 'package:two_do/features/authentication/presentation/login/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:focus_app/firebase_options.dart';
+import 'package:two_do/firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

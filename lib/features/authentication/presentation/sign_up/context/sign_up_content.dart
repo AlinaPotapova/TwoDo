@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:focus_app/features/authentication/presentation/login/login_screen.dart';
-import 'package:focus_app/features/authentication/presentation/sign_up/cubit/sign_up_cubit.dart';
-import 'package:focus_app/shared/auth_widgets.dart';
+import 'package:two_do/features/authentication/presentation/login/login_screen.dart';
+import 'package:two_do/features/authentication/presentation/sign_up/cubit/sign_up_cubit.dart';
+import 'package:two_do/shared/auth_widgets.dart';
 
 class SignUpContent extends StatefulWidget {
   const SignUpContent({super.key});

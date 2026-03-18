@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:focus_app/features/dashboard/dashboard_screen.dart';
-import 'package:focus_app/features/authentication/presentation/login/content/login_content.dart';
-import 'package:focus_app/features/authentication/presentation/login/cubit/cubit/login_cubit.dart';
-import 'package:focus_app/shared/custom_builder.dart';
+import 'package:two_do/features/dashboard/dashboard_screen.dart';
+import 'package:two_do/features/authentication/presentation/login/content/login_content.dart';
+import 'package:two_do/features/authentication/presentation/login/cubit/cubit/login_cubit.dart';
+import 'package:two_do/shared/custom_builder.dart';
 
 class LoginBlocBuilder extends StatelessWidget {
   const LoginBlocBuilder({super.key});

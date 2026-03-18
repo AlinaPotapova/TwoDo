@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:focus_app/features/authentication/data/firebase_repository.dart';
-import 'package:focus_app/features/authentication/domain/auth_repository.dart';
-import 'package:focus_app/features/authentication/services/google_service.dart';
 import 'package:get/get.dart';
+import 'package:two_do/features/authentication/data/firebase_repository.dart';
+import 'package:two_do/features/authentication/domain/auth_repository.dart';
+import 'package:two_do/features/authentication/services/google_service.dart';
 
 class DependenciesRoot {
   static bool _initialized = false;
