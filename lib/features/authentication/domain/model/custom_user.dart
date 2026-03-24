@@ -3,7 +3,11 @@ class CustomUser {
   final String name;
   final String email;
 
-  CustomUser({required this.id, required this.name, required this.email});
+  CustomUser({
+    required this.id,
+    required this.name,
+    required this.email,
+  });
 
   factory CustomUser.fromMap(Map<String, dynamic> data, String userId) {
     return CustomUser(

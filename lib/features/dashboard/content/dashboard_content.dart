@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:two_do/features/dashboard/cubit/dashboard_cubit.dart';
 import 'package:two_do/features/authentication/presentation/login/login_screen.dart';
+import 'package:two_do/features/settings/presentation/settings_screen.dart';
 
 class DashboardContent extends StatelessWidget {
   const DashboardContent({super.key});
@@ -222,7 +223,7 @@ class _InfoCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: TextStyle(color: Colors.white.withOpacity(0.6)),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
           ),
         ],
       ),
@@ -255,7 +256,7 @@ class _CategoryItem extends StatelessWidget {
               Row(
                 children: [
                   CircleAvatar(
-                    backgroundColor: color.withOpacity(0.2),
+                    backgroundColor: color.withValues(alpha: 0.2),
                     child: Icon(icon, color: color),
                   ),
                   const SizedBox(width: 12),
@@ -294,6 +295,14 @@ class _BottomNav extends StatelessWidget {
       backgroundColor: const Color(0xFF0B1220),
       selectedItemColor: Colors.blue,
       unselectedItemColor: const Color.fromARGB(136, 129, 75, 223),
+      onTap: (index) {
+        if (index == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SettingsScreen()),
+          );
+        }
+      },
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.dashboard),
