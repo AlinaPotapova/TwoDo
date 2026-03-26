@@ -30,6 +30,17 @@ class SettingsUploading extends SettingsState {
   final String? localPhotoPath;
 }
 
+class SettingsUpdating extends SettingsState {
+  SettingsUpdating({
+    required this.user,
+    required this.themeMode,
+    this.localPhotoPath,
+  });
+  final CustomUser user;
+  final ThemeMode themeMode;
+  final String? localPhotoPath;
+}
+
 class SettingsUpdateSuccess extends SettingsState {
   SettingsUpdateSuccess({
     required this.user,

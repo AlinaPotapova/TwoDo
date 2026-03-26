@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:two_do/core/image_provider/local_file_image_io.dart';
 import 'package:two_do/core/result_widget.dart';
 import 'package:two_do/features/authentication/domain/auth_repository.dart';
 import 'package:two_do/features/authentication/domain/model/custom_user.dart';
@@ -12,10 +13,10 @@ class SettingsCubit extends Cubit<SettingsState> {
     required SettingsRepository settingsRepository,
     required AuthRepository authRepository,
     required ValueNotifier<ThemeMode> themeController,
-  })  : _settings = settingsRepository,
-        _auth = authRepository,
-        _themeController = themeController,
-        super(SettingsInitial());
+  }) : _settings = settingsRepository,
+       _auth = authRepository,
+       _themeController = themeController,
+       super(SettingsInitial());
 
   final SettingsRepository _settings;
   final AuthRepository _auth;
@@ -31,13 +32,17 @@ class SettingsCubit extends Cubit<SettingsState> {
     switch (result) {
       case Success(:final data):
         _user = data;
-        emit(SettingsLoaded(
-          user: data,
-          themeMode: _themeController.value,
-          localPhotoPath: _localPhotoPath,
-        ));
+        emit(
+          SettingsLoaded(
+            user: data,
+            themeMode: _themeController.value,
+            localPhotoPath: _localPhotoPath,
+          ),
+        );
       case Failure(:final message):
-        emit(SettingsFailure(message: message, localPhotoPath: _localPhotoPath));
+        emit(
+          SettingsFailure(message: message, localPhotoPath: _localPhotoPath),
+        );
     }
   }
 
@@ -45,11 +50,13 @@ class SettingsCubit extends Cubit<SettingsState> {
   void setTheme(ThemeMode mode) {
     _themeController.value = mode;
     if (_user case final user?) {
-      emit(SettingsLoaded(
-        user: user,
-        themeMode: mode,
-        localPhotoPath: _localPhotoPath,
-      ));
+      emit(
+        SettingsLoaded(
+          user: user,
+          themeMode: mode,
+          localPhotoPath: _localPhotoPath,
+        ),
+      );
     }
   }
 
@@ -57,17 +64,25 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> updateDisplayName(String name) async {
     final user = _user;
     if (user == null) return;
-    emit(SettingsLoading());
+    emit(
+      SettingsUpdating(
+        user: user,
+        themeMode: _themeController.value,
+        localPhotoPath: _localPhotoPath,
+      ),
+    );
     final result = await _settings.updateDisplayName(name);
     switch (result) {
       case Success():
         await _reloadUser();
       case Failure(:final message):
-        emit(SettingsFailure(
-          message: message,
-          user: user,
-          localPhotoPath: _localPhotoPath,
-        ));
+        emit(
+          SettingsFailure(
+            message: message,
+            user: user,
+            localPhotoPath: _localPhotoPath,
+          ),
+        );
     }
   }
 
@@ -75,25 +90,33 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> uploadPhoto(String filePath) async {
     final user = _user;
     if (user == null) return;
-    emit(SettingsUploading(
-      user: user,
-      themeMode: _themeController.value,
-      localPhotoPath: _localPhotoPath,
-    ));
-    final cachedPath = await _settings.cacheLocalProfilePhoto(filePath);
-    if (cachedPath != null) {
-      _localPhotoPath = cachedPath;
-      emit(SettingsUpdateSuccess(
+    emit(
+      SettingsUploading(
         user: user,
         themeMode: _themeController.value,
         localPhotoPath: _localPhotoPath,
-      ));
+      ),
+    );
+    final cachedPath = await _settings.cacheLocalProfilePhoto(filePath);
+    if (cachedPath != null) {
+      _localPhotoPath = cachedPath;
+      // Evict the old cached image so the new one loads from disk
+      await evictLocalFileImage(cachedPath);
+      emit(
+        SettingsUpdateSuccess(
+          user: user,
+          themeMode: _themeController.value,
+          localPhotoPath: _localPhotoPath,
+        ),
+      );
     } else {
-      emit(SettingsFailure(
-        message: 'Failed to save photo',
-        user: user,
-        localPhotoPath: _localPhotoPath,
-      ));
+      emit(
+        SettingsFailure(
+          message: 'Failed to save photo',
+          user: user,
+          localPhotoPath: _localPhotoPath,
+        ),
+      );
     }
   }
 
@@ -109,17 +132,21 @@ class SettingsCubit extends Cubit<SettingsState> {
     switch (result) {
       case Success(:final data):
         _user = data;
-        emit(SettingsUpdateSuccess(
-          user: data,
-          themeMode: _themeController.value,
-          localPhotoPath: _localPhotoPath,
-        ));
+        emit(
+          SettingsUpdateSuccess(
+            user: data,
+            themeMode: _themeController.value,
+            localPhotoPath: _localPhotoPath,
+          ),
+        );
       case Failure(:final message):
-        emit(SettingsFailure(
-          message: message,
-          user: _user,
-          localPhotoPath: _localPhotoPath,
-        ));
+        emit(
+          SettingsFailure(
+            message: message,
+            user: _user,
+            localPhotoPath: _localPhotoPath,
+          ),
+        );
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:two_do/core/dependency_injection.dart';
@@ -12,7 +13,7 @@ Future<void> main() async {
   // await FirebaseAppCheck.instance.activate(
   //   androidProvider: AndroidProvider.debug,
   // );
-
+  if (kIsWeb) {}
   DependenciesRoot.init();
   runApp(const MyApp());
 }

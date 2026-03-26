@@ -4,7 +4,8 @@ import 'package:get/get.dart';
 import 'package:two_do/features/authentication/data/firebase_repository.dart';
 import 'package:two_do/features/authentication/domain/auth_repository.dart';
 import 'package:two_do/features/authentication/services/google_service.dart';
-import 'package:two_do/features/settings/data/firebase_settings_repository.dart';
+import 'package:two_do/features/settings/data/firebase_settings_repository.dart'
+    if (dart.library.html) 'package:two_do/features/settings/data/firebase_settings_repository_stub.dart';
 import 'package:two_do/features/settings/domain/settings_repository.dart';
 
 class DependenciesRoot {

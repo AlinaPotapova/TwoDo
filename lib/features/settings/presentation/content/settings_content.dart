@@ -3,16 +3,12 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:two_do/core/image_provider/local_file_image.dart';
+import 'package:two_do/core/image_provider/local_file_image_io.dart';
+
 import 'package:two_do/features/authentication/domain/model/custom_user.dart';
 import 'package:two_do/features/authentication/presentation/login/login_screen.dart';
 import 'package:two_do/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:two_do/features/settings/presentation/cubit/settings_state.dart';
-
-const _bgColor = Color(0xFF0B1220);
-const _cardColor = Color(0xFF111827);
-const _primaryBlue = Color(0xFF136DEC);
-const _borderColor = Color(0xFF1F2937);
 
 // ---------------------------------------------------------------------------
 // Root content widget
@@ -44,32 +40,37 @@ class SettingsContent extends StatelessWidget {
       },
       builder: (context, state) {
         final user = _userFrom(state);
+        final scheme = Theme.of(context).colorScheme;
         return Scaffold(
-          backgroundColor: _bgColor,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
-            backgroundColor: _bgColor,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: Icon(Icons.arrow_back, color: scheme.onSurface),
               onPressed: () => Navigator.pop(context),
             ),
-            title: const Text(
+            title: Text(
               'Settings',
               style: TextStyle(
-                color: Colors.white,
+                color: scheme.onSurface,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(1),
-              child: Divider(color: _borderColor, height: 1, thickness: 1),
+              child: Divider(
+                color: scheme.outlineVariant,
+                height: 1,
+                thickness: 1,
+              ),
             ),
           ),
           body:
               user == null
-                  ? const Center(
-                    child: CircularProgressIndicator(color: _primaryBlue),
+                  ? Center(
+                    child: CircularProgressIndicator(color: scheme.primary),
                   )
                   : _SettingsBody(
                     user: user,
@@ -86,6 +87,7 @@ class SettingsContent extends StatelessWidget {
 CustomUser? _userFrom(SettingsState state) => switch (state) {
   SettingsLoaded(:final user) => user,
   SettingsUploading(:final user) => user,
+  SettingsUpdating(:final user) => user,
   SettingsUpdateSuccess(:final user) => user,
   SettingsFailure(:final user) => user,
   _ => null,
@@ -94,6 +96,7 @@ CustomUser? _userFrom(SettingsState state) => switch (state) {
 ThemeMode _themeModeFrom(SettingsState state) => switch (state) {
   SettingsLoaded(:final themeMode) => themeMode,
   SettingsUploading(:final themeMode) => themeMode,
+  SettingsUpdating(:final themeMode) => themeMode,
   SettingsUpdateSuccess(:final themeMode) => themeMode,
   SettingsFailure(:final themeMode) => themeMode ?? ThemeMode.system,
   _ => ThemeMode.system,
@@ -102,6 +105,7 @@ ThemeMode _themeModeFrom(SettingsState state) => switch (state) {
 String? _localPhotoPathFrom(SettingsState state) => switch (state) {
   SettingsLoaded(:final localPhotoPath) => localPhotoPath,
   SettingsUploading(:final localPhotoPath) => localPhotoPath,
+  SettingsUpdating(:final localPhotoPath) => localPhotoPath,
   SettingsUpdateSuccess(:final localPhotoPath) => localPhotoPath,
   SettingsFailure(:final localPhotoPath) => localPhotoPath,
   _ => null,
@@ -137,7 +141,6 @@ class _SettingsBody extends StatelessWidget {
             isUploading: isUploading,
             localPhotoPath: localPhotoPath,
           ),
-          //TODO: localisation
           const _SectionHeader('NOTIFICATIONS'),
           const _NotificationsCard(),
           const _SectionHeader('APP SETTINGS'),
@@ -168,14 +171,15 @@ class _ProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         _AvatarStack(isUploading: isUploading, localPhotoPath: localPhotoPath),
         const SizedBox(height: 16),
         Text(
           user.name.isEmpty ? 'User' : user.name,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: scheme.onSurface,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -183,7 +187,10 @@ class _ProfileSection extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           user.email,
-          style: const TextStyle(color: Colors.white70, fontSize: 16),
+          style: TextStyle(
+            color: scheme.onSurface.withValues(alpha: 0.7),
+            fontSize: 16,
+          ),
         ),
         const SizedBox(height: 20),
         SizedBox(
@@ -191,16 +198,16 @@ class _ProfileSection extends StatelessWidget {
           height: 48,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: _primaryBlue,
+              backgroundColor: scheme.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             onPressed: () => _showEditSheet(context),
-            child: const Text(
+            child: Text(
               'Edit Profile',
               style: TextStyle(
-                color: Colors.white,
+                color: scheme.onPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -217,7 +224,7 @@ class _ProfileSection extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: _cardColor,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -238,18 +245,19 @@ class _AvatarStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Stack(
       children: [
         _buildAvatar(),
         if (isUploading)
           Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.black45,
+                color: Colors.black.withValues(alpha: 0.45),
               ),
-              child: const Center(
-                child: CircularProgressIndicator(color: _primaryBlue),
+              child: Center(
+                child: CircularProgressIndicator(color: scheme.primary),
               ),
             ),
           ),
@@ -275,10 +283,15 @@ class _DefaultAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CircleAvatar(
+    final scheme = Theme.of(context).colorScheme;
+    return CircleAvatar(
       radius: 52,
-      backgroundColor: Color(0xFF1F2937),
-      child: Icon(Icons.person, size: 52, color: Colors.white60),
+      backgroundColor: scheme.surfaceContainerHighest,
+      child: Icon(
+        Icons.person,
+        size: 52,
+        color: scheme.onSurface.withValues(alpha: 0.6),
+      ),
     );
   }
 }
@@ -286,15 +299,16 @@ class _DefaultAvatar extends StatelessWidget {
 class _CameraBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () => _pickImage(context),
       child: Container(
         padding: const EdgeInsets.all(8),
-        decoration: const BoxDecoration(
-          color: _primaryBlue,
+        decoration: BoxDecoration(
+          color: scheme.primary,
           shape: BoxShape.circle,
         ),
-        child: const Icon(Icons.photo_camera, color: Colors.white, size: 18),
+        child: Icon(Icons.photo_camera, color: scheme.onPrimary, size: 18),
       ),
     );
   }
@@ -323,12 +337,13 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 8, left: 8),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Colors.white54,
+        style: TextStyle(
+          color: scheme.onSurface.withValues(alpha: 0.54),
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
@@ -345,11 +360,12 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: _cardColor,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _borderColor),
+        border: Border.all(color: scheme.outlineVariant),
       ),
       child: Column(children: children),
     );
@@ -394,12 +410,13 @@ class _NotificationsCardState extends State<_NotificationsCard> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return _Card(
       children: [
         _ToggleRow(
           icon: Icons.notifications_active,
-          iconColor: _primaryBlue,
-          iconBg: const Color(0x1A136DEC),
+          iconColor: scheme.primary,
+          iconBg: scheme.primary.withValues(alpha: 0.1),
           title: 'Task Reminders',
           subtitle: 'Alerts for upcoming tasks',
           value: _taskReminders,
@@ -409,7 +426,7 @@ class _NotificationsCardState extends State<_NotificationsCard> {
         _ToggleRow(
           icon: Icons.emoji_events,
           iconColor: Colors.amber,
-          iconBg: const Color(0x1AFFC107),
+          iconBg: Colors.amber.withValues(alpha: 0.1),
           title: 'Reward Alerts',
           subtitle: 'When partner unlocks a reward',
           value: _rewardAlerts,
@@ -443,6 +460,7 @@ class _ToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Padding(
@@ -457,16 +475,16 @@ class _ToggleRow extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: scheme.onSurface,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        color: Colors.white54,
+                      style: TextStyle(
+                        color: scheme.onSurface.withValues(alpha: 0.54),
                         fontSize: 12,
                       ),
                     ),
@@ -476,14 +494,14 @@ class _ToggleRow extends StatelessWidget {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeThumbColor: _primaryBlue,
-                activeTrackColor: _primaryBlue.withValues(alpha: 0.5),
+                activeThumbColor: scheme.primary,
+                activeTrackColor: scheme.primary.withValues(alpha: 0.5),
               ),
             ],
           ),
         ),
         if (showDivider)
-          const Divider(color: _borderColor, height: 1, thickness: 1),
+          Divider(color: scheme.outlineVariant, height: 1, thickness: 1),
       ],
     );
   }
@@ -523,6 +541,7 @@ class _AppearanceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         InkWell(
@@ -532,17 +551,17 @@ class _AppearanceRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                const _IconBox(
+                _IconBox(
                   icon: Icons.dark_mode,
-                  color: Colors.white70,
-                  bg: Color(0xFF1F2937),
+                  color: scheme.onSurface.withValues(alpha: 0.7),
+                  bg: scheme.surfaceContainerHighest,
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Appearance',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: scheme.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -550,8 +569,8 @@ class _AppearanceRow extends StatelessWidget {
                 ),
                 Text(
                   _label,
-                  style: const TextStyle(
-                    color: _primaryBlue,
+                  style: TextStyle(
+                    color: scheme.primary,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -561,7 +580,7 @@ class _AppearanceRow extends StatelessWidget {
           ),
         ),
         if (showDivider)
-          const Divider(color: _borderColor, height: 1, thickness: 1),
+          Divider(color: scheme.outlineVariant, height: 1, thickness: 1),
       ],
     );
   }
@@ -570,7 +589,7 @@ class _AppearanceRow extends StatelessWidget {
     final cubit = context.read<SettingsCubit>();
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: _cardColor,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -594,15 +613,16 @@ class _ThemePickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             'Appearance',
             style: TextStyle(
-              color: Colors.white,
+              color: scheme.onSurface,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -629,9 +649,9 @@ class _ThemePickerSheet extends StatelessWidget {
             selected: {current},
             onSelectionChanged: (modes) => onSelect(modes.first),
             style: SegmentedButton.styleFrom(
-              selectedBackgroundColor: _primaryBlue,
-              selectedForegroundColor: Colors.white,
-              foregroundColor: Colors.white70,
+              selectedBackgroundColor: scheme.primary,
+              selectedForegroundColor: scheme.onPrimary,
+              foregroundColor: scheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 24),
@@ -646,21 +666,22 @@ class _LanguageRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
-        children: const [
+        children: [
           _IconBox(
             icon: Icons.language,
-            color: Colors.white70,
-            bg: Color(0xFF1F2937),
+            color: scheme.onSurface.withValues(alpha: 0.7),
+            bg: scheme.surfaceContainerHighest,
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               'Language',
               style: TextStyle(
-                color: Colors.white,
+                color: scheme.onSurface,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
@@ -668,9 +689,15 @@ class _LanguageRow extends StatelessWidget {
           ),
           Text(
             'English (US)',
-            style: TextStyle(color: Colors.white54, fontSize: 14),
+            style: TextStyle(
+              color: scheme.onSurface.withValues(alpha: 0.54),
+              fontSize: 14,
+            ),
           ),
-          Icon(Icons.chevron_right, color: Colors.white54),
+          Icon(
+            Icons.chevron_right,
+            color: scheme.onSurface.withValues(alpha: 0.54),
+          ),
         ],
       ),
     );
@@ -748,6 +775,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.only(
         left: 24,
@@ -759,10 +787,10 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Edit Profile',
             style: TextStyle(
-              color: Colors.white,
+              color: scheme.onSurface,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -770,16 +798,18 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
           const SizedBox(height: 20),
           TextField(
             controller: _controller,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: scheme.onSurface),
             decoration: InputDecoration(
               labelText: 'Display Name',
-              labelStyle: const TextStyle(color: Colors.white70),
+              labelStyle: TextStyle(
+                color: scheme.onSurface.withValues(alpha: 0.7),
+              ),
               enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: _borderColor),
+                borderSide: BorderSide(color: scheme.outlineVariant),
                 borderRadius: BorderRadius.circular(12),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: _primaryBlue),
+                borderSide: BorderSide(color: scheme.primary),
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
@@ -790,16 +820,16 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
             height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: _primaryBlue,
+                backgroundColor: scheme.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
               onPressed: () => _save(context),
-              child: const Text(
+              child: Text(
                 'Save',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: scheme.onPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               ),

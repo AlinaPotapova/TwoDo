@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:two_do/features/authentication/domain/auth_repository.dart';
 import 'package:two_do/features/settings/domain/settings_repository.dart';
-import 'package:two_do/features/settings/presentation/content/settings_content.dart';
+import 'package:two_do/features/settings/presentation/builder/settings_bloc_builder.dart';
 import 'package:two_do/features/settings/presentation/cubit/settings_cubit.dart';
 
 /// Entry point for the Settings feature.
@@ -20,7 +20,7 @@ class SettingsScreen extends StatelessWidget {
         authRepository: Get.find<AuthRepository>(),
         themeController: Get.find<ValueNotifier<ThemeMode>>(),
       )..load(),
-      child: const SettingsContent(),
+      child: const SettingsBlocBuilder(),
     );
   }
 }
