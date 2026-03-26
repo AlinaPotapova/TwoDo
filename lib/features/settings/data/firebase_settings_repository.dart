@@ -1,5 +1,5 @@
 import 'dart:developer' as developer;
-import 'dart:io';
+import 'package:universal_io/io.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:path_provider/path_provider.dart';

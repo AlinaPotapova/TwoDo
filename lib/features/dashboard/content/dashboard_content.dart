@@ -301,6 +301,12 @@ class _BottomNav extends StatelessWidget {
             context,
             MaterialPageRoute(builder: (_) => const SettingsScreen()),
           );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('This tab is not available yet'),
+            ),
+          );
         }
       },
       items: const [
