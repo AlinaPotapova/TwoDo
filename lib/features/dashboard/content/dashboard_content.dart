@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:two_do/features/dashboard/cubit/dashboard_cubit.dart';
 import 'package:two_do/features/authentication/presentation/login/login_screen.dart';
 import 'package:two_do/features/settings/presentation/settings_screen.dart';
+import 'package:two_do/features/tasks/presentation/weekly_view/weekly_tasks_screen.dart';
 
 class DashboardContent extends StatelessWidget {
   const DashboardContent({super.key});
@@ -296,7 +297,15 @@ class _BottomNav extends StatelessWidget {
       selectedItemColor: Colors.blue,
       unselectedItemColor: const Color.fromARGB(136, 129, 75, 223),
       onTap: (index) {
-        if (index == 3) {
+        const int tasksNavIndex = 1;
+        const int settingsNavIndex = 3;
+
+        if (index == tasksNavIndex) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const WeeklyTasksScreen()),
+          );
+        } else if (index == settingsNavIndex) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SettingsScreen()),

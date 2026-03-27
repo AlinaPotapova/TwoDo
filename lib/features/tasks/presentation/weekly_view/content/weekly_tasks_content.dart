@@ -80,36 +80,15 @@ class WeeklyTasksContent extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: scheme.surface,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: scheme.onSurface),
-          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.chevron_left, color: scheme.onSurface, size: 28),
+          onPressed: () => context.read<TasksCubit>().previousWeek(),
         ),
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Tasks',
-              style: TextStyle(
-                color: scheme.onSurface,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            _WeekHeaderInline(weekStart),
-          ],
-        ),
+        title: _WeekRangeTitle(weekStart),
         actions: [
           IconButton(
-            icon: Icon(Icons.arrow_back_ios, size: 20, color: scheme.onSurface),
-            onPressed: () => context.read<TasksCubit>().previousWeek(),
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.arrow_forward_ios,
-              size: 20,
-              color: scheme.onSurface,
-            ),
+            icon: Icon(Icons.chevron_right, color: scheme.onSurface, size: 28),
             onPressed: () => context.read<TasksCubit>().nextWeek(),
           ),
         ],
@@ -120,7 +99,7 @@ class WeeklyTasksContent extends StatelessWidget {
             pinned: true,
             backgroundColor: scheme.surface,
             elevation: 0,
-            expandedHeight: 240,
+            expandedHeight: 160,
             flexibleSpace: FlexibleSpaceBar(
               background: Column(
                 children: [
@@ -129,20 +108,12 @@ class WeeklyTasksContent extends StatelessWidget {
                       horizontal: 16,
                       vertical: 12,
                     ),
-                    child: _ProgressBar(completionPercent),
+                    child: _ProgressBar(completionPercent, sort),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: _FilterChips(filter),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: _SortChips(sort),
-                  ),
-
                   const SizedBox(height: 8),
                 ],
               ),
@@ -244,67 +215,45 @@ class WeeklyTasksContent extends StatelessWidget {
 
     return sections;
   }
-
 }
 
-class _WeekHeaderInline extends StatelessWidget {
-  const _WeekHeaderInline(this.weekStart);
+class _WeekRangeTitle extends StatelessWidget {
+  const _WeekRangeTitle(this.weekStart);
   final DateTime weekStart;
 
-  String _formatDate(DateTime d) {
-    return '${monthNames[d.month - 1]} ${d.day}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  String _label() {
     final weekEnd = weekStart.add(const Duration(days: 6));
-    final scheme = Theme.of(context).colorScheme;
-
-    return Text(
-      '${_formatDate(weekStart)} - ${_formatDate(weekEnd)}',
-      style: Theme.of(
-        context,
-      ).textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
-    );
+    final startMonth = monthNames[weekStart.month - 1].substring(0, 3);
+    if (weekStart.month == weekEnd.month) {
+      return '$startMonth ${weekStart.day} - ${weekEnd.day}';
+    }
+    final endMonth = monthNames[weekEnd.month - 1].substring(0, 3);
+    return '$startMonth ${weekStart.day} - $endMonth ${weekEnd.day}';
   }
-}
-
-class _SortChips extends StatelessWidget {
-  const _SortChips(this.currentSort);
-  final TaskSort currentSort;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final cubit = context.read<TasksCubit>();
-
-    return Row(
-      children: [
-        _FilterChip(
-          label: 'By Date',
-          isSelected: currentSort == TaskSort.byDate,
-          onTap: () => cubit.setSort(TaskSort.byDate),
-          scheme: scheme,
-        ),
-        const SizedBox(width: 8),
-        _FilterChip(
-          label: 'By Assignee',
-          isSelected: currentSort == TaskSort.byAssignee,
-          onTap: () => cubit.setSort(TaskSort.byAssignee),
-          scheme: scheme,
-        ),
-      ],
+    return Text(
+      _label(),
+      style: TextStyle(
+        color: scheme.onSurface,
+        fontWeight: FontWeight.bold,
+        fontSize: 18,
+      ),
     );
   }
 }
 
 class _ProgressBar extends StatelessWidget {
-  const _ProgressBar(this.percent);
+  const _ProgressBar(this.percent, this.sort);
   final double percent;
+  final TaskSort sort;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final cubit = context.read<TasksCubit>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,11 +268,50 @@ class _ProgressBar extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            Text(
-              '${(percent * 100).toStringAsFixed(0)}%',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: scheme.onSurface),
+            Row(
+              children: [
+                Text(
+                  '${(percent * 100).toStringAsFixed(0)}%',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                PopupMenuButton<TaskSort>(
+                  icon: Icon(Icons.sort, color: scheme.onSurfaceVariant, size: 20),
+                  onSelected: cubit.setSort,
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: TaskSort.byDate,
+                      child: Row(
+                        children: [
+                          Icon(Icons.access_time, size: 16),
+                          const SizedBox(width: 8),
+                          const Text('By Date'),
+                          if (sort == TaskSort.byDate) ...[
+                            const Spacer(),
+                            Icon(Icons.check, size: 16),
+                          ],
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: TaskSort.byAssignee,
+                      child: Row(
+                        children: [
+                          Icon(Icons.person_outline, size: 16),
+                          const SizedBox(width: 8),
+                          const Text('By Assignee'),
+                          if (sort == TaskSort.byAssignee) ...[
+                            const Spacer(),
+                            Icon(Icons.check, size: 16),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
@@ -348,74 +336,37 @@ class _FilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final cubit = context.read<TasksCubit>();
 
     return Row(
       children: [
-        _FilterChip(
-          label: 'All',
-          isSelected: currentFilter == TaskFilter.all,
-          onTap: () => cubit.setFilter(TaskFilter.all),
-          scheme: scheme,
+        ChoiceChip(
+          avatar: const Icon(Icons.tune, size: 16),
+          label: const Text('All'),
+          selected: currentFilter == TaskFilter.all,
+          onSelected: (_) => cubit.setFilter(TaskFilter.all),
         ),
         const SizedBox(width: 8),
-        _FilterChip(
-          label: 'My Tasks',
-          isSelected: currentFilter == TaskFilter.mine,
-          onTap: () => cubit.setFilter(TaskFilter.mine),
-          scheme: scheme,
+        ChoiceChip(
+          avatar: const CircleAvatar(
+            backgroundColor: Colors.green,
+            child: Text('M', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          ),
+          label: const Text('My Tasks'),
+          selected: currentFilter == TaskFilter.mine,
+          onSelected: (_) => cubit.setFilter(TaskFilter.mine),
         ),
         const SizedBox(width: 8),
-        _FilterChip(
-          label: "Partner's Tasks",
-          isSelected: currentFilter == TaskFilter.partner,
-          onTap: () => cubit.setFilter(TaskFilter.partner),
-          scheme: scheme,
+        ChoiceChip(
+          avatar: const CircleAvatar(
+            backgroundColor: Colors.purple,
+            child: Text('P', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          ),
+          label: const Text("Partner's"),
+          selected: currentFilter == TaskFilter.partner,
+          onSelected: (_) => cubit.setFilter(TaskFilter.partner),
         ),
       ],
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    required this.scheme,
-  });
-
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color:
-              isSelected
-                  ? scheme.primary.withValues(alpha: 0.2)
-                  : Colors.transparent,
-          border: Border.all(
-            color: isSelected ? scheme.primary : scheme.outline,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: isSelected ? scheme.primary : scheme.onSurfaceVariant,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-          ),
-        ),
-      ),
     );
   }
 }

@@ -7,6 +7,8 @@ import 'package:two_do/features/authentication/services/google_service.dart';
 import 'package:two_do/features/settings/data/firebase_settings_repository.dart'
     if (dart.library.html) 'package:two_do/features/settings/data/firebase_settings_repository_stub.dart';
 import 'package:two_do/features/settings/domain/settings_repository.dart';
+import 'package:two_do/features/tasks/data/firebase_task_repository.dart';
+import 'package:two_do/features/tasks/domain/task_repository.dart';
 
 class DependenciesRoot {
   static bool _initialized = false;
@@ -32,6 +34,10 @@ class DependenciesRoot {
       FirebaseSettingsRepository(),
       force: force,
     );
+    _registerSingleton<TaskRepository>(
+      FirebaseTaskRepository(auth: firebaseAuthBuilder?.call() ?? FirebaseAuth.instance),
+      force: force,
+    );
     _initialized = true;
   }
 
@@ -52,6 +58,9 @@ class DependenciesRoot {
     }
     if (Get.isRegistered<SettingsRepository>()) {
       Get.delete<SettingsRepository>(force: true);
+    }
+    if (Get.isRegistered<TaskRepository>()) {
+      Get.delete<TaskRepository>(force: true);
     }
     if (Get.isRegistered<ValueNotifier<ThemeMode>>()) {
       Get.delete<ValueNotifier<ThemeMode>>(force: true);

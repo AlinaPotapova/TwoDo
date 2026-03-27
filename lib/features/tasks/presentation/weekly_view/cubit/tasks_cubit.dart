@@ -40,7 +40,7 @@ class TasksCubit extends Cubit<TasksState> {
   /// Change the filter.
   void setFilter(TaskFilter filter) {
     _currentFilter = filter;
-    _updateFilter();
+    _updateState();
   }
 
   /// Change the sort order.
@@ -50,13 +50,15 @@ class TasksCubit extends Cubit<TasksState> {
 
     if (state is TasksLoaded) {
       final currentState = state as TasksLoaded;
-      emit(TasksLoaded(
-        weekStart: currentState.weekStart,
-        tasks: currentState.tasks,
-        filter: currentState.filter,
-        completionPercent: currentState.completionPercent,
-        sort: _currentSort,
-      ));
+      emit(
+        TasksLoaded(
+          weekStart: currentState.weekStart,
+          tasks: currentState.tasks,
+          filter: currentState.filter,
+          completionPercent: currentState.completionPercent,
+          sort: _currentSort,
+        ),
+      );
     }
   }
 
@@ -64,64 +66,6 @@ class TasksCubit extends Cubit<TasksState> {
   Future<void> toggleComplete(Task task) async {
     await _repository.toggleComplete(
       task.copyWith(isCompleted: !task.isCompleted),
-    );
-  }
-
-  void _updateFilter() {
-    if (state is! TasksLoaded) return;
-
-    final weekEnd = _weekStart.add(const Duration(days: 6));
-
-    // Expand tasks for the current week
-    final expandedTasks = <Task>[];
-    for (final task in _allTasks) {
-      final effectiveDueDays = _getEffectiveDueDays(task);
-
-      if (task.repeatType == 'none' && task.startDate != null) {
-        final startDate = task.startDate!;
-        final isStartDateInWeek =
-            !startDate.isBefore(_weekStart) && !startDate.isAfter(weekEnd);
-        if (isStartDateInWeek) {
-          expandedTasks.add(task.copyWith(dueDays: effectiveDueDays));
-        }
-      } else {
-        final taskIsInWeek = effectiveDueDays.any((weekday) {
-          final targetDate = _weekStart.add(Duration(days: weekday - 1));
-          return !targetDate.isBefore(_weekStart) &&
-              !targetDate.isAfter(weekEnd);
-        });
-
-        if (taskIsInWeek) {
-          expandedTasks.add(task.copyWith(dueDays: effectiveDueDays));
-        }
-      }
-    }
-
-    // Apply new filter to expanded tasks
-    final filteredTasks = expandedTasks.where((task) {
-      switch (_currentFilter) {
-        case TaskFilter.all:
-          return true;
-        case TaskFilter.mine:
-          return task.assignedTo == 'me';
-        case TaskFilter.partner:
-          return task.assignedTo == 'partner';
-      }
-    }).toList();
-
-    // Recalculate completion percentage
-    final completed = filteredTasks.where((t) => t.isCompleted).length;
-    final total = filteredTasks.length;
-    final percent = total > 0 ? completed / total : 0.0;
-
-    emit(
-      TasksLoaded(
-        weekStart: _weekStart,
-        tasks: filteredTasks,
-        filter: _currentFilter,
-        completionPercent: percent,
-        sort: _currentSort,
-      ),
     );
   }
 
@@ -141,32 +85,31 @@ class TasksCubit extends Cubit<TasksState> {
 
   /// Update the UI state based on current filter and week.
   void _updateState() {
-    final weekEnd = _weekStart.add(const Duration(days: 6));
+    // weekEnd is exclusive: start of next Monday, so all of Sunday is included
+    final weekEnd = _weekStart.add(const Duration(days: 7));
 
     // Expand tasks based on their repeat type
     final expandedTasks = <Task>[];
     for (final task in _allTasks) {
-      final effectiveDueDays = _getEffectiveDueDays(task);
-
-      // For non-repeating tasks, only show if start date is in this week
-      if (task.repeatType == 'none' && task.startDate != null) {
+      if (task.startDate != null) {
+        // Tasks with a startDate belong to a specific week — show only then
         final startDate = task.startDate!;
         final isStartDateInWeek =
-            !startDate.isBefore(_weekStart) && !startDate.isAfter(weekEnd);
+            !startDate.isBefore(_weekStart) && startDate.isBefore(weekEnd);
         if (isStartDateInWeek) {
-          expandedTasks.add(task.copyWith(dueDays: effectiveDueDays));
+          expandedTasks.add(task);
         }
       } else {
-        // For repeating tasks, check if effective due day is in this week
-        final taskIsInWeek = effectiveDueDays.any((weekday) {
+        // Tasks without a startDate repeat indefinitely — match by weekday
+        final taskIsInWeek = task.dueDays.any((weekday) {
           // weekday is ISO: 1=Mon, 7=Sun
           final targetDate = _weekStart.add(Duration(days: weekday - 1));
           return !targetDate.isBefore(_weekStart) &&
-              !targetDate.isAfter(weekEnd);
+              targetDate.isBefore(weekEnd);
         });
 
         if (taskIsInWeek) {
-          expandedTasks.add(task.copyWith(dueDays: effectiveDueDays));
+          expandedTasks.add(task);
         }
       }
     }
@@ -198,11 +141,6 @@ class TasksCubit extends Cubit<TasksState> {
         sort: _currentSort,
       ),
     );
-  }
-
-  /// Get effective due days for task (dueDays is ignored for 'none' type).
-  List<int> _getEffectiveDueDays(Task task) {
-    return task.dueDays;
   }
 
   @override

@@ -1,5 +1,5 @@
 import 'dart:developer' as developer;
-import 'package:universal_io/io.dart';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,7 +11,7 @@ import 'package:two_do/features/settings/domain/settings_repository.dart';
 /// Images are stored locally in app documents directory.
 class FirebaseSettingsRepository implements SettingsRepository {
   FirebaseSettingsRepository({FirebaseAuth? auth})
-      : _auth = auth ?? FirebaseAuth.instance;
+    : _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseAuth _auth;
 

@@ -6,12 +6,10 @@ import 'package:two_do/features/tasks/presentation/add_edit_task/cubit/add_edit_
 
 /// Cubit for adding or editing a task.
 class AddEditTaskCubit extends Cubit<AddEditTaskState> {
-  AddEditTaskCubit(
-    TaskRepository repository, {
-    Task? existing,
-  })  : _repository = repository,
-        _existingTask = existing,
-        super(AddEditTaskInitial());
+  AddEditTaskCubit(TaskRepository repository, {Task? existing})
+    : _repository = repository,
+      _existingTask = existing,
+      super(AddEditTaskInitial());
 
   final TaskRepository _repository;
   final Task? _existingTask;
@@ -27,137 +25,100 @@ class AddEditTaskCubit extends Cubit<AddEditTaskState> {
   }) async {
     emit(AddEditTaskSaving());
 
-    // For daily tasks, create individual tasks for each day until end of month
-    if (repeatType == 'daily' && _existingTask == null) {
-      await _saveDailyTasks(
+    if (_existingTask == null && repeatType != 'none') {
+      await _saveRecurringTasks(
         title: title,
         description: description,
         assignedTo: assignedTo,
-        dueDays: dueDays,
+        repeatType: repeatType,
         startDate: startDate,
       );
-    } else if (repeatType == 'weekly' && _existingTask == null) {
-      // For weekly tasks, create individual tasks for each matching weekday until end of month
-      await _saveWeeklyTasks(
-        title: title,
-        description: description,
-        assignedTo: assignedTo,
-        dueDays: dueDays,
-        startDate: startDate,
-      );
-    } else {
-      // For 'none' type or edits, save as single task
-      final task = (_existingTask?.copyWith(
-            title: title,
-            description: description,
-            assignedTo: assignedTo,
-            dueDays: dueDays,
-            repeatType: repeatType,
-            startDate: startDate,
-          )) ??
+      return;
+    }
+
+    final task =
+        _existingTask?.copyWith(
+          title: title,
+          description: description,
+          assignedTo: assignedTo,
+          dueDays: dueDays,
+          repeatType: repeatType,
+          startDate: startDate,
+        ) ??
+        Task(
+          id: '',
+          title: title,
+          description: description,
+          assignedTo: assignedTo,
+          dueDays: dueDays,
+          repeatType: repeatType,
+          isCompleted: false,
+          startDate: startDate,
+        );
+
+    final result =
+        _existingTask == null
+            ? await _repository.addTask(task)
+            : await _repository.updateTask(task);
+
+    switch (result) {
+      case Success():
+        emit(AddEditTaskSuccess());
+      case Failure(:final message):
+        emit(AddEditTaskFailure(message: message));
+    }
+  }
+
+  /// Creates one task per occurrence (day or week) from startDate until end of month.
+  Future<void> _saveRecurringTasks({
+    required String title,
+    String? description,
+    required String assignedTo,
+    required String repeatType,
+    DateTime? startDate,
+  }) async {
+    final start = _toMidnight(startDate ?? DateTime.now());
+    final lastDayOfMonth = DateTime(start.year, start.month + 1, 0);
+    final step =
+        repeatType == 'daily'
+            ? const Duration(days: 1)
+            : const Duration(days: 7);
+
+    final futures = <Future<Result<String>>>[];
+
+    for (
+      DateTime date = start;
+      !date.isAfter(lastDayOfMonth);
+      date = date.add(step)
+    ) {
+      futures.add(
+        _repository.addTask(
           Task(
-            id: '', // Will be set by Firebase
+            id: '',
             title: title,
             description: description,
             assignedTo: assignedTo,
-            dueDays: dueDays,
-            repeatType: repeatType,
+            dueDays: [date.weekday],
+            repeatType: 'weekly',
             isCompleted: false,
-            startDate: startDate,
-          );
-
-      final result = _existingTask == null
-          ? await _repository.addTask(task)
-          : await _repository.updateTask(task);
-
-      switch (result) {
-        case Success():
-          emit(AddEditTaskSuccess());
-        case Failure(:final message):
-          emit(AddEditTaskFailure(message: message));
-      }
-    }
-  }
-
-  /// Save daily tasks: create individual tasks for each day until end of month.
-  Future<void> _saveDailyTasks({
-    required String title,
-    required String? description,
-    required String assignedTo,
-    required List<int> dueDays,
-    DateTime? startDate,
-  }) async {
-    final start = startDate ?? DateTime.now();
-    final lastDayOfMonth = DateTime(start.year, start.month + 1, 0);
-
-    // If creating a new task, generate one for each day from start until end of month
-    List<Future<Result<String>>> futures = [];
-
-    for (DateTime date = start; !date.isAfter(lastDayOfMonth); date = date.add(const Duration(days: 1))) {
-      final task = Task(
-        id: '', // Will be set by Firebase
-        title: title,
-        description: description,
-        assignedTo: assignedTo,
-        dueDays: [date.weekday], // Each task has only its own weekday
-        repeatType: 'none', // Independent tasks, not repeating
-        isCompleted: false,
-        startDate: date,
+            startDate: date,
+          ),
+        ),
       );
-      futures.add(_repository.addTask(task));
     }
 
     final results = await Future.wait(futures);
 
-    // Check if all succeeded
-    final allSuccess = results.every((r) => r is Success);
-
-    if (allSuccess) {
+    if (results.every((r) => r is Success)) {
       emit(AddEditTaskSuccess());
     } else {
-      emit(AddEditTaskFailure(message: 'Failed to create some daily tasks'));
-    }
-  }
-
-  /// Save weekly tasks: create individual tasks for each matching weekday until end of month.
-  Future<void> _saveWeeklyTasks({
-    required String title,
-    required String? description,
-    required String assignedTo,
-    required List<int> dueDays,
-    DateTime? startDate,
-  }) async {
-    final start = startDate ?? DateTime.now();
-    final lastDayOfMonth = DateTime(start.year, start.month + 1, 0);
-
-    List<Future<Result<String>>> futures = [];
-
-    // Create tasks for each matching weekday until end of month
-    DateTime currentDate = start;
-    while (!currentDate.isAfter(lastDayOfMonth)) {
-      final task = Task(
-        id: '', // Will be set by Firebase
-        title: title,
-        description: description,
-        assignedTo: assignedTo,
-        dueDays: [currentDate.weekday], // Each task has only its own weekday
-        repeatType: 'none', // Independent tasks, not repeating
-        isCompleted: false,
-        startDate: currentDate,
+      emit(
+        AddEditTaskFailure(message: 'Failed to create some $repeatType tasks'),
       );
-      futures.add(_repository.addTask(task));
-      currentDate = currentDate.add(const Duration(days: 7));
-    }
-
-    final results = await Future.wait(futures);
-
-    // Check if all succeeded
-    final allSuccess = results.every((r) => r is Success);
-
-    if (allSuccess) {
-      emit(AddEditTaskSuccess());
-    } else {
-      emit(AddEditTaskFailure(message: 'Failed to create some weekly tasks'));
     }
   }
+
+  /// Normalize a DateTime to midnight to avoid time-component issues in week filtering.
+  DateTime _toMidnight(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
 }

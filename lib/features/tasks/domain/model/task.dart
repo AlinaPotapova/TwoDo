@@ -72,7 +72,9 @@ class Task {
       isCompleted: map['isCompleted'] as bool? ?? false,
       dueTime: map['dueTime'] as String?,
       startDate: map['startDate'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['startDate'] as int)
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (map['startDate'] as num).toInt(),
+            )
           : null,
     );
   }
