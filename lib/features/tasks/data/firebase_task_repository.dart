@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +8,10 @@ import 'package:two_do/features/tasks/domain/model/task.dart';
 import 'package:two_do/features/tasks/domain/task_repository.dart';
 
 /// Firebase implementation of [TaskRepository].
+///
+/// Write operations (add, update, toggle, delete) use fire-and-forget so they
+/// return immediately when the device is offline. Firebase queues the writes
+/// locally and syncs them once connectivity is restored.
 class FirebaseTaskRepository implements TaskRepository {
   FirebaseTaskRepository({FirebaseAuth? auth})
     : _auth = auth ?? FirebaseAuth.instance;
@@ -16,7 +21,10 @@ class FirebaseTaskRepository implements TaskRepository {
   DatabaseReference _getTasksRef() {
     final uid = _auth.currentUser?.uid;
     if (uid == null) throw Exception('User not authenticated');
-    return FirebaseDatabase.instance.ref().child('tasks').child(uid);
+    final ref = FirebaseDatabase.instance.ref().child('tasks').child(uid);
+    // Keep a local copy so watchTasks() works while offline.
+    ref.keepSynced(true);
+    return ref;
   }
 
   @override
@@ -41,7 +49,8 @@ class FirebaseTaskRepository implements TaskRepository {
   Future<Result<String>> addTask(Task task) async {
     try {
       final ref = _getTasksRef().push();
-      await ref.set(task.toMap());
+      // Fire-and-forget: Firebase queues the write locally and syncs later.
+      unawaited(ref.set(task.toMap()));
       return Success(ref.key ?? '');
     } catch (e, st) {
       developer.log(
@@ -62,7 +71,7 @@ class FirebaseTaskRepository implements TaskRepository {
   @override
   Future<Result<void>> updateTask(Task task) async {
     try {
-      await _getTasksRef().child(task.id).update(task.toMap());
+      unawaited(_getTasksRef().child(task.id).update(task.toMap()));
       return Success(null);
     } catch (e, st) {
       developer.log(
@@ -83,9 +92,9 @@ class FirebaseTaskRepository implements TaskRepository {
   @override
   Future<Result<void>> toggleComplete(Task task) async {
     try {
-      await _getTasksRef().child(task.id).update({
-        'isCompleted': task.isCompleted,
-      });
+      unawaited(
+        _getTasksRef().child(task.id).update({'isCompleted': task.isCompleted}),
+      );
       return Success(null);
     } catch (e, st) {
       developer.log(
@@ -106,7 +115,7 @@ class FirebaseTaskRepository implements TaskRepository {
   @override
   Future<Result<void>> deleteTask(String taskId) async {
     try {
-      await _getTasksRef().child(taskId).remove();
+      unawaited(_getTasksRef().child(taskId).remove());
       return Success(null);
     } catch (e, st) {
       developer.log(

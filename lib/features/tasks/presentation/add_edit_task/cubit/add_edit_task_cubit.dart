@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:two_do/core/connectivity_service.dart';
 import 'package:two_do/core/result_widget.dart';
 import 'package:two_do/features/tasks/domain/model/task.dart';
 import 'package:two_do/features/tasks/domain/task_repository.dart';
@@ -6,12 +7,17 @@ import 'package:two_do/features/tasks/presentation/add_edit_task/cubit/add_edit_
 
 /// Cubit for adding or editing a task.
 class AddEditTaskCubit extends Cubit<AddEditTaskState> {
-  AddEditTaskCubit(TaskRepository repository, {Task? existing})
-    : _repository = repository,
-      _existingTask = existing,
-      super(AddEditTaskInitial());
+  AddEditTaskCubit(
+    TaskRepository repository,
+    ConnectivityService connectivity, {
+    Task? existing,
+  }) : _repository = repository,
+       _connectivity = connectivity,
+       _existingTask = existing,
+       super(AddEditTaskInitial());
 
   final TaskRepository _repository;
+  final ConnectivityService _connectivity;
   final Task? _existingTask;
 
   /// Save the task (add or edit).
@@ -66,7 +72,8 @@ class AddEditTaskCubit extends Cubit<AddEditTaskState> {
 
     switch (result) {
       case Success():
-        emit(AddEditTaskSuccess());
+        final online = await _connectivity.checkIsOnline();
+        emit(online ? AddEditTaskSuccess() : AddEditTaskSavedLocally());
       case Failure(:final message):
         emit(AddEditTaskFailure(message: message));
     }
@@ -111,9 +118,10 @@ class AddEditTaskCubit extends Cubit<AddEditTaskState> {
     }
 
     final results = await Future.wait(futures);
+    final online = await _connectivity.checkIsOnline();
 
     if (results.every((r) => r is Success)) {
-      emit(AddEditTaskSuccess());
+      emit(online ? AddEditTaskSuccess() : AddEditTaskSavedLocally());
     } else {
       emit(
         AddEditTaskFailure(message: 'Failed to create some $repeatType tasks'),

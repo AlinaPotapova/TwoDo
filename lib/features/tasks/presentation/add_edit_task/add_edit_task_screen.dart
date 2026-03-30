@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:two_do/core/connectivity_service.dart';
 import 'package:two_do/features/tasks/domain/model/task.dart';
 import 'package:two_do/features/tasks/domain/task_repository.dart';
 import 'package:two_do/features/tasks/presentation/add_edit_task/builder/add_edit_task_bloc_builder.dart';
@@ -14,7 +15,11 @@ class AddEditTaskScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AddEditTaskCubit(Get.find<TaskRepository>(), existing: task),
+      create: (_) => AddEditTaskCubit(
+        Get.find<TaskRepository>(),
+        Get.find<ConnectivityService>(),
+        existing: task,
+      ),
       child: const AddEditTaskBlocBuilder(),
     );
   }

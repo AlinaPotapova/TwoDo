@@ -22,6 +22,7 @@ class WeeklyTasksContent extends StatelessWidget {
             :final filter,
             :final completionPercent,
             :final sort,
+            :final isOffline,
           ) =>
             _buildLoaded(
               context,
@@ -30,6 +31,7 @@ class WeeklyTasksContent extends StatelessWidget {
               filter,
               completionPercent,
               sort,
+              isOffline,
             ),
           TasksFailure(:final message) => _buildError(context, message),
           _ => _buildLoading(),
@@ -72,6 +74,7 @@ class WeeklyTasksContent extends StatelessWidget {
     TaskFilter filter,
     double completionPercent,
     TaskSort sort,
+    bool isOffline,
   ) {
     final scheme = Theme.of(context).colorScheme;
 
@@ -97,36 +100,43 @@ class WeeklyTasksContent extends StatelessWidget {
           ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            pinned: true,
-            backgroundColor: scheme.surface,
-            elevation: 0,
-            expandedHeight: 160,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+      body: Column(
+        children: [
+          if (isOffline) const _OfflineBanner(),
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  automaticallyImplyLeading: false,
+                  pinned: true,
+                  backgroundColor: scheme.surface,
+                  elevation: 0,
+                  expandedHeight: 160,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          child: _ProgressBar(completionPercent, sort),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _FilterChips(filter),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                     ),
-                    child: _ProgressBar(completionPercent, sort),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _FilterChips(filter),
+                ),
+                SliverList(
+                  delegate: SliverChildListDelegate(
+                    _buildDaySections(context, weekStart, tasks, sort),
                   ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          ),
-          SliverList(
-            delegate: SliverChildListDelegate(
-              _buildDaySections(context, weekStart, tasks, sort),
+                ),
+              ],
             ),
           ),
         ],
@@ -459,6 +469,36 @@ class _TaskCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      color: scheme.tertiaryContainer,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Icon(
+            Icons.cloud_off_outlined,
+            size: 16,
+            color: scheme.onTertiaryContainer,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'No internet — changes will sync automatically',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: scheme.onTertiaryContainer,
+            ),
+          ),
+        ],
       ),
     );
   }

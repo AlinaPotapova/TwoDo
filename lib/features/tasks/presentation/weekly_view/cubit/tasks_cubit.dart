@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:two_do/core/connectivity_service.dart';
 import 'package:two_do/core/date_utils.dart';
 import 'package:two_do/features/tasks/domain/model/task.dart';
 import 'package:two_do/features/tasks/domain/task_repository.dart';
@@ -8,22 +9,27 @@ import 'package:two_do/features/tasks/presentation/weekly_view/cubit/tasks_state
 
 /// Cubit for managing the weekly tasks view.
 class TasksCubit extends Cubit<TasksState> {
-  TasksCubit(TaskRepository repository)
+  TasksCubit(TaskRepository repository, ConnectivityService connectivity)
     : _repository = repository,
+      _connectivity = connectivity,
       super(TasksInitial());
 
   final TaskRepository _repository;
+  final ConnectivityService _connectivity;
   StreamSubscription<List<Task>>? _tasksSubscription;
+  StreamSubscription<bool>? _connectivitySubscription;
 
   DateTime _weekStart = DateTime.now();
   List<Task> _allTasks = [];
   TaskFilter _currentFilter = TaskFilter.all;
   TaskSort _currentSort = TaskSort.byDate;
+  bool _isOffline = false;
 
   /// Initialize by loading the current week's tasks.
   void load() {
     emit(TasksLoading());
     _weekStart = getMondayOfWeek(DateTime.now());
+    _subscribeToConnectivity();
     _subscribeToTasks();
   }
 
@@ -59,6 +65,7 @@ class TasksCubit extends Cubit<TasksState> {
           filter: currentState.filter,
           completionPercent: currentState.completionPercent,
           sort: _currentSort,
+          isOffline: _isOffline,
         ),
       );
     }
@@ -68,6 +75,16 @@ class TasksCubit extends Cubit<TasksState> {
   Future<void> toggleComplete(Task task) async {
     await _repository.toggleComplete(
       task.copyWith(isCompleted: !task.isCompleted),
+    );
+  }
+
+  void _subscribeToConnectivity() {
+    _connectivitySubscription?.cancel();
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
+      (isOnline) {
+        _isOffline = !isOnline;
+        _updateState();
+      },
     );
   }
 
@@ -118,7 +135,6 @@ class TasksCubit extends Cubit<TasksState> {
 
     final filteredTasks =
         expandedTasks.where((task) {
-          // Apply filter
           switch (_currentFilter) {
             case TaskFilter.all:
               return true;
@@ -141,6 +157,7 @@ class TasksCubit extends Cubit<TasksState> {
         filter: _currentFilter,
         completionPercent: percent,
         sort: _currentSort,
+        isOffline: _isOffline,
       ),
     );
   }
@@ -148,6 +165,7 @@ class TasksCubit extends Cubit<TasksState> {
   @override
   Future<void> close() {
     _tasksSubscription?.cancel();
+    _connectivitySubscription?.cancel();
     return super.close();
   }
 }

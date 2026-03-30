@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,7 +14,13 @@ Future<void> main() async {
   // await FirebaseAppCheck.instance.activate(
   //   androidProvider: AndroidProvider.debug,
   // );
-  if (kIsWeb) {}
+
+  // Enable local disk cache so reads/writes work while offline.
+  // Must be called before any database reference is used.
+  if (!kIsWeb) {
+    FirebaseDatabase.instance.setPersistenceEnabled(true);
+  }
+
   DependenciesRoot.init();
   runApp(const MyApp());
 }
