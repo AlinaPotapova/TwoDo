@@ -82,11 +82,15 @@ class WeeklyTasksContent extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: scheme.onSurface, size: 28),
-          onPressed: () => context.read<TasksCubit>().previousWeek(),
+          icon: Icon(Icons.arrow_back, color: scheme.onSurface),
+          onPressed: () => Navigator.pop(context),
         ),
         title: _WeekRangeTitle(weekStart),
         actions: [
+          IconButton(
+            icon: Icon(Icons.chevron_left, color: scheme.onSurface, size: 28),
+            onPressed: () => context.read<TasksCubit>().previousWeek(),
+          ),
           IconButton(
             icon: Icon(Icons.chevron_right, color: scheme.onSurface, size: 28),
             onPressed: () => context.read<TasksCubit>().nextWeek(),
@@ -96,6 +100,7 @@ class WeeklyTasksContent extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            automaticallyImplyLeading: false,
             pinned: true,
             backgroundColor: scheme.surface,
             elevation: 0,
@@ -278,38 +283,43 @@ class _ProgressBar extends StatelessWidget {
                   ),
                 ),
                 PopupMenuButton<TaskSort>(
-                  icon: Icon(Icons.sort, color: scheme.onSurfaceVariant, size: 20),
+                  icon: Icon(
+                    Icons.sort,
+                    color: scheme.onSurfaceVariant,
+                    size: 20,
+                  ),
                   onSelected: cubit.setSort,
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: TaskSort.byDate,
-                      child: Row(
-                        children: [
-                          Icon(Icons.access_time, size: 16),
-                          const SizedBox(width: 8),
-                          const Text('By Date'),
-                          if (sort == TaskSort.byDate) ...[
-                            const Spacer(),
-                            Icon(Icons.check, size: 16),
-                          ],
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: TaskSort.byAssignee,
-                      child: Row(
-                        children: [
-                          Icon(Icons.person_outline, size: 16),
-                          const SizedBox(width: 8),
-                          const Text('By Assignee'),
-                          if (sort == TaskSort.byAssignee) ...[
-                            const Spacer(),
-                            Icon(Icons.check, size: 16),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
+                  itemBuilder:
+                      (_) => [
+                        PopupMenuItem(
+                          value: TaskSort.byDate,
+                          child: Row(
+                            children: [
+                              Icon(Icons.access_time, size: 16),
+                              const SizedBox(width: 8),
+                              const Text('By Date'),
+                              if (sort == TaskSort.byDate) ...[
+                                const Spacer(),
+                                Icon(Icons.check, size: 16),
+                              ],
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: TaskSort.byAssignee,
+                          child: Row(
+                            children: [
+                              Icon(Icons.person_outline, size: 16),
+                              const SizedBox(width: 8),
+                              const Text('By Assignee'),
+                              if (sort == TaskSort.byAssignee) ...[
+                                const Spacer(),
+                                Icon(Icons.check, size: 16),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
                 ),
               ],
             ),
@@ -350,7 +360,10 @@ class _FilterChips extends StatelessWidget {
         ChoiceChip(
           avatar: const CircleAvatar(
             backgroundColor: Colors.green,
-            child: Text('M', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+            child: Text(
+              'M',
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            ),
           ),
           label: const Text('My Tasks'),
           selected: currentFilter == TaskFilter.mine,
@@ -360,7 +373,10 @@ class _FilterChips extends StatelessWidget {
         ChoiceChip(
           avatar: const CircleAvatar(
             backgroundColor: Colors.purple,
-            child: Text('P', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+            child: Text(
+              'P',
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            ),
           ),
           label: const Text("Partner's"),
           selected: currentFilter == TaskFilter.partner,

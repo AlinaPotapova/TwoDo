@@ -9,7 +9,7 @@ import 'package:two_do/features/tasks/domain/task_repository.dart';
 /// Firebase implementation of [TaskRepository].
 class FirebaseTaskRepository implements TaskRepository {
   FirebaseTaskRepository({FirebaseAuth? auth})
-      : _auth = auth ?? FirebaseAuth.instance;
+    : _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseAuth _auth;
 
@@ -21,29 +21,20 @@ class FirebaseTaskRepository implements TaskRepository {
 
   @override
   Stream<List<Task>> watchTasks() {
-    try {
-      return _getTasksRef().onValue.map((event) {
-        final tasks = <Task>[];
-        if (event.snapshot.value is Map) {
-          final map = Map<String, dynamic>.from(event.snapshot.value as Map);
-          map.forEach((key, value) {
-            if (value is Map) {
-              tasks.add(Task.fromMap(key, value));
-            }
-          });
-        }
-        return tasks;
-      });
-    } catch (e, st) {
-      developer.log(
-        'Error watching tasks',
-        name: 'tasks',
-        level: 1000,
-        error: e,
-        stackTrace: st,
-      );
-      return Stream.value([]);
-    }
+    return Stream.fromFuture(
+      Future(() => _getTasksRef()),
+    ).asyncExpand((ref) => ref.onValue).map((event) {
+      final tasks = <Task>[];
+      if (event.snapshot.value is Map) {
+        final map = Map<String, dynamic>.from(event.snapshot.value as Map);
+        map.forEach((key, value) {
+          if (value is Map) {
+            tasks.add(Task.fromMap(key, value));
+          }
+        });
+      }
+      return tasks;
+    });
   }
 
   @override
@@ -92,9 +83,9 @@ class FirebaseTaskRepository implements TaskRepository {
   @override
   Future<Result<void>> toggleComplete(Task task) async {
     try {
-      await _getTasksRef()
-          .child(task.id)
-          .update({'isCompleted': task.isCompleted});
+      await _getTasksRef().child(task.id).update({
+        'isCompleted': task.isCompleted,
+      });
       return Success(null);
     } catch (e, st) {
       developer.log(

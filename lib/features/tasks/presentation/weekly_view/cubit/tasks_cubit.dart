@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:two_do/core/date_utils.dart';
 import 'package:two_do/features/tasks/domain/model/task.dart';
@@ -11,7 +13,7 @@ class TasksCubit extends Cubit<TasksState> {
       super(TasksInitial());
 
   final TaskRepository _repository;
-  final _tasksSubscription = <dynamic>[];
+  StreamSubscription<List<Task>>? _tasksSubscription;
 
   DateTime _weekStart = DateTime.now();
   List<Task> _allTasks = [];
@@ -71,7 +73,8 @@ class TasksCubit extends Cubit<TasksState> {
 
   /// Subscribe to the tasks stream from the repository.
   void _subscribeToTasks() {
-    final subscription = _repository.watchTasks().listen(
+    _tasksSubscription?.cancel();
+    _tasksSubscription = _repository.watchTasks().listen(
       (tasks) {
         _allTasks = tasks;
         _updateState();
@@ -80,7 +83,6 @@ class TasksCubit extends Cubit<TasksState> {
         emit(TasksFailure(message: 'Failed to load tasks: $e'));
       },
     );
-    _tasksSubscription.add(subscription);
   }
 
   /// Update the UI state based on current filter and week.
@@ -145,9 +147,7 @@ class TasksCubit extends Cubit<TasksState> {
 
   @override
   Future<void> close() {
-    for (final sub in _tasksSubscription) {
-      sub.cancel();
-    }
+    _tasksSubscription?.cancel();
     return super.close();
   }
 }

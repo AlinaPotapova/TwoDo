@@ -215,7 +215,7 @@ class _AddEditTaskContentState extends State<AddEditTaskContent> {
         ),
       ),
       bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + MediaQuery.of(context).viewInsets.bottom),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         color: scheme.surface,
         child: ElevatedButton(
           onPressed: () {

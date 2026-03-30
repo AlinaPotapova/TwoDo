@@ -25,7 +25,10 @@ class AddEditTaskCubit extends Cubit<AddEditTaskState> {
   }) async {
     emit(AddEditTaskSaving());
 
-    if (_existingTask == null && repeatType != 'none') {
+    if (repeatType != 'none') {
+      if (_existingTask != null) {
+        await _repository.deleteTask(_existingTask.id);
+      }
       await _saveRecurringTasks(
         title: title,
         description: description,
@@ -99,7 +102,7 @@ class AddEditTaskCubit extends Cubit<AddEditTaskState> {
             description: description,
             assignedTo: assignedTo,
             dueDays: [date.weekday],
-            repeatType: 'weekly',
+            repeatType: repeatType,
             isCompleted: false,
             startDate: date,
           ),
