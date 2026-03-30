@@ -11,10 +11,20 @@ class AddEditTaskBlocBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppBlocBuilder<AddEditTaskCubit, AddEditTaskState>(
-      listenWhen: (_, state) => state is AddEditTaskSuccess || state is AddEditTaskFailure,
+      listenWhen: (_, state) =>
+          state is AddEditTaskSuccess ||
+          state is AddEditTaskSavedLocally ||
+          state is AddEditTaskFailure,
       listener: (context, state) {
         if (state is AddEditTaskSuccess) {
           Navigator.pop(context, true);
+        } else if (state is AddEditTaskSavedLocally) {
+          Navigator.pop(context, true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Saved locally — will sync when online'),
+            ),
+          );
         } else if (state is AddEditTaskFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),

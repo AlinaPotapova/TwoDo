@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:two_do/core/connectivity_service.dart';
 import 'package:two_do/features/authentication/data/firebase_repository.dart';
 import 'package:two_do/features/authentication/domain/auth_repository.dart';
 import 'package:two_do/features/authentication/services/google_service.dart';
@@ -34,6 +35,10 @@ class DependenciesRoot {
       FirebaseSettingsRepository(),
       force: force,
     );
+    _registerSingleton<ConnectivityService>(
+      ConnectivityService(),
+      force: force,
+    );
     _registerSingleton<TaskRepository>(
       FirebaseTaskRepository(auth: firebaseAuthBuilder?.call() ?? FirebaseAuth.instance),
       force: force,
@@ -58,6 +63,9 @@ class DependenciesRoot {
     }
     if (Get.isRegistered<SettingsRepository>()) {
       Get.delete<SettingsRepository>(force: true);
+    }
+    if (Get.isRegistered<ConnectivityService>()) {
+      Get.delete<ConnectivityService>(force: true);
     }
     if (Get.isRegistered<TaskRepository>()) {
       Get.delete<TaskRepository>(force: true);

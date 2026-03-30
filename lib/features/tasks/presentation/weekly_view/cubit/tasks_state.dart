@@ -13,6 +13,7 @@ class TasksLoaded extends TasksState {
     required this.filter,
     required this.completionPercent,
     required this.sort,
+    required this.isOffline,
   });
 
   final DateTime weekStart;             // Monday of displayed week
@@ -20,6 +21,7 @@ class TasksLoaded extends TasksState {
   final TaskFilter filter;
   final double completionPercent;       // 0.0–1.0
   final TaskSort sort;
+  final bool isOffline;
 }
 
 class TasksFailure extends TasksState {

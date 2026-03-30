@@ -45,6 +45,7 @@ dependencies:
   get: ^4.7.3
   image_picker: ^1.1.2
   path_provider: ^2.1.5
+  connectivity_plus: ^6.1.0
 
 dev_dependencies:
   flutter_test:
